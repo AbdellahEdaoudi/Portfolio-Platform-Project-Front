@@ -4,7 +4,7 @@ import Image from "next/image";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MyContext } from "../../../Context/MyContext";
+import { MyContext } from "../../Context/MyContext";
 import io from "socket.io-client";
 import DOMPurify from 'dompurify';
 
