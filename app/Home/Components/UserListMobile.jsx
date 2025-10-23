@@ -4,12 +4,8 @@ import Image from "next/image";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-<<<<<<< HEAD
 import { MyContext } from "../../Context/MyContext";
-=======
-import { MyContext } from "../../../Context/MyContext";
 import io from "socket.io-client";
->>>>>>> 0bfbda7a4ec9ea5b9701eed45f58474a41a92f94
 import DOMPurify from 'dompurify';
 
 function UserListMobile({ selectedUser, setSelectedUser }) {
@@ -18,52 +14,6 @@ function UserListMobile({ selectedUser, setSelectedUser }) {
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef(null);
   const lodd = Array.from({ length: 20 }, (_, index) => index + 1);
-<<<<<<< HEAD
-  const {
-    SERVER_URL_V,
-    setMessages,
-    userDetails,
-    EmailUser,
-    messages,
-  } = useContext(MyContext);
-  const router = useRouter();
-
-  // Handle User Click
-  const handleUserClick = async (User, lastMessage) => {
-  try {
-    // تعيين المستخدم المختار وتخزينه في localStorage
-    setSelectedUser(User);
-    localStorage.setItem("SelectedUser", JSON.stringify(User));
-
-    // تحديث حالة الرسائل المقروءة إذا كانت lastMessage موجودة
-    if (lastMessage?.from && lastMessage?.to) {
-      await axios.put(
-        `${SERVER_URL_V}/readorno`,
-        {
-          fromEmail: lastMessage.from,
-          toEmail: lastMessage.to,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
-          },
-        }
-      );
-      // تحديث الرسائل محليًا مباشرة باستخدام lastMessage
-      setMessages((prevMessages) =>
-        prevMessages.map((message) =>
-          message.from === lastMessage.from &&
-          message.to === lastMessage.to &&
-          message.readorno === false
-            ? { ...message, readorno: true }
-            : message
-        )
-      );
-    }
-
-    // Scroll to the end of messages
-    setTimeout(() => {
-=======
   const {SERVER_URL_V,EmailUser,messages} = useContext(MyContext);
   const router = useRouter();
 
@@ -141,48 +91,22 @@ function UserListMobile({ selectedUser, setSelectedUser }) {
   // Scroll To End
   useEffect(() => {
     const scrollMessagesToEnd = () => {
->>>>>>> 0bfbda7a4ec9ea5b9701eed45f58474a41a92f94
       if (messagesEndRef.current) {
         messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
       }
+    };
+    const timeout = setTimeout(() => {
+      scrollMessagesToEnd();
     }, 1);
+    return () => clearTimeout(timeout);
+  }, [messages]);
 
-  } catch (error) {
-    console.error(
-      "Error handling user click:",
-      error.response ? error.response.data : error.message
-    );
-  }
-  };
-  // Function to safely highlight search text
   const safeHighlightText = (text) => {
     if (!searchQuery.trim()) return text;
     const regex = new RegExp(`(${searchQuery.trim()})`, "gi");
     const highlightedText = text.replace(regex, "<b>$1</b>");
     return DOMPurify.sanitize(highlightedText);
   };
-<<<<<<< HEAD
-  // Filter users who have exchanged messages with the logged-in user
-  const filteredUserDetails = userDetails.filter(userDetail =>
-    userDetail.email === EmailUser ||
-    messages.some(msg =>
-      (msg.from === EmailUser && msg.to === userDetail.email) ||
-      (msg.to === EmailUser && msg.from === userDetail.email)
-    )
-  );
-  // Map users to include their last message and sort by last message date
-  const userWithLastMessages = filteredUserDetails.map(User => {
-    const lastMessage = messages
-      .filter(msg =>
-        (msg.from === EmailUser && msg.to === User.email) ||
-        (msg.to === EmailUser && msg.from === User.email)
-      ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-  
-    return { User, lastMessage };
-  }).sort((a, b) =>
-    new Date(b.lastMessage?.createdAt) - new Date(a.lastMessage?.createdAt)
-  );
-=======
   const formatLastMessage = (lastMessage, EmailUser, maxLength = 20) => {
   if (!lastMessage?.message) return "No messages yet";
   const prefix = lastMessage.from === EmailUser ? "you:" : "";
@@ -193,7 +117,6 @@ function UserListMobile({ selectedUser, setSelectedUser }) {
 
   return prefix + message;
 };
->>>>>>> 0bfbda7a4ec9ea5b9701eed45f58474a41a92f94
 
   return (
     <div>
@@ -203,11 +126,7 @@ function UserListMobile({ selectedUser, setSelectedUser }) {
           type="search"
           placeholder="Search by Name or Email"
           value={searchQuery}
-<<<<<<< HEAD
-          onChange={(e) => setSearchQuery(e.target.value)}
-=======
           onChange={e => setSearchQuery(e.target.value)}
->>>>>>> 0bfbda7a4ec9ea5b9701eed45f58474a41a92f94
           className="w-full px-4 py-2 mb-4 rounded-md bg-gray-700 text-white focus:outline-none"
         />
         {/* Users List */}
@@ -261,76 +180,6 @@ function UserListMobile({ selectedUser, setSelectedUser }) {
                         </p>
                       </div>
                     </div>
-<<<<<<< HEAD
-                  ))}
-                {userWithLastMessages.map(({ User, lastMessage }, i) =>{
-                      const MessgesLength = Array.from(
-                        new Map(
-                          messages
-                            .filter(
-                              (fl) => fl.to === EmailUser && fl.from === lastMessage?.from  && fl.readorno === false
-                            )
-                            .map((item) => [item.message, item])
-                        ).values()
-                      );
-                      return (
-                        <div
-                        key={i}
-                        onClick={() => {
-                          handleUserClick(User, lastMessage);
-                          router.push(`/message/to/${User.username}`)
-                        }}
-                        className={`${
-                          searchQuery === "" ? "" : "hidden"
-                        } flex relative items-center gap-4 p-2 mb-1 duration-500 hover:bg-gray-700 focus:bg-gray-400 cursor-pointer rounded-lg transition 
-                         `}
-                      >
-                        <Link
-                          href={`/${User.username}`}
-                          className="flex-shrink-0 relative w-12 h-12 "
-                        >
-                          <Image
-                            src={User.urlimage}
-                            alt="Profile"
-                            className="rounded-full"
-                            layout="fill"
-                          />
-                        </Link>
-                        <div className="flex flex-col">
-                          <p className="text-lg">{User.fullname}</p>
-                          <div className="flex items-center gap-1">
-                            <p className="text-[14px] text-gray-400 line-clamp-1">
-                            {lastMessage
-                              ? lastMessage.from === EmailUser
-                                ? `you: ${lastMessage.message} `
-                                : `${lastMessage.message}`
-                              : "No messages yet"}
-                          </p>
-                          <p className={`${User.email === EmailUser && 'hidden'} text-sm text-gray-500`}>
-                          {MessgesLength.length > 1 ? `(${MessgesLength.length})` : MessgesLength.length === 1 ? "" : ""}
-                          </p>
-                          </div>
-                        </div>
-                        {lastMessage && (
-                          <p
-                            className={` 
-                        ${
-                          lastMessage.from === EmailUser &&
-                          lastMessage.to === EmailUser &&
-                          "hidden"
-                        }
-                        ${lastMessage.from === EmailUser && "hidden"}
-                        ${
-                          lastMessage.readorno && "hidden"
-                        } absolute right-3 top-1/2 -translate-y-1/2 bg-sky-800 rounded-full px-1  text-[10px]`}
-                          >
-                            new
-                          </p>
-                        )}
-                      </div>
-                      )
-                    })}
-=======
                   
                     {/* New Message Badge */}
                     {User.unreadCount > 0 && (
@@ -340,7 +189,6 @@ function UserListMobile({ selectedUser, setSelectedUser }) {
                     )}
                   </div>
                 ))}
->>>>>>> 0bfbda7a4ec9ea5b9701eed45f58474a41a92f94
               </div>
             </div>
         </div>
